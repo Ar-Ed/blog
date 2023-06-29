@@ -4,16 +4,16 @@ image: profile.jpg
 about:
   template: jolla
   links:
-    - icon: huggingface
-      text: Huggingface
-      href: https://huggingface.co/Ar-Ed
-    - icon: linkedin
-      text: LinkedIn
-      href: https://www.linkedin.com/in/aras-ede%C5%9F/
     - icon: github
       text: Github
       href: https://github.com//Ar-Ed
+    - icon: linkedin
+      text: LinkedIn
+      href: https://www.linkedin.com/in/aras-ede%C5%9F/
+    - icon: huggingface
+      text: Huggingface
+      href: https://huggingface.co/Ar-Ed
 
 ---
 
-About this blog
+Currently, I am a student at Istanbul Technical University. I like to work on data science and related fields. In this blog I will be writing about mostly machine learning, computer science, and mathematics.
