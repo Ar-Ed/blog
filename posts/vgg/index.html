@@ -7,9 +7,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 <meta name="author" content="Aras Edeş">
-<meta name="dcterms.date" content="2023-06-28">
+<meta name="dcterms.date" content="2023-06-29">
 
-<title>Mathematically Consistent - Post With Code</title>
+<title>Mathematically Consistent - VGG Paper Implementation from Scratch</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -142,11 +142,12 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <header id="title-block-header" class="quarto-title-block default page-columns page-full">
   <div class="quarto-title-banner page-columns page-full">
     <div class="quarto-title column-body">
-      <h1 class="title">Post With Code</h1>
+      <h1 class="title">VGG Paper Implementation from Scratch</h1>
                                 <div class="quarto-categories">
-                <div class="quarto-category">news</div>
-                <div class="quarto-category">code</div>
-                <div class="quarto-category">analysis</div>
+                <div class="quarto-category">IN PROGRESS</div>
+                <div class="quarto-category">Deep Learning</div>
+                <div class="quarto-category">PyTorch</div>
+                <div class="quarto-category">VGG</div>
               </div>
                   </div>
   </div>
@@ -164,7 +165,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
       <div>
       <div class="quarto-title-meta-heading">Published</div>
       <div class="quarto-title-meta-contents">
-        <p class="date">June 28, 2023</p>
+        <p class="date">June 29, 2023</p>
       </div>
     </div>
     
@@ -182,31 +183,287 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 
 
-<p>For a demonstration of a line plot on a polar axis, see <a href="#fig-polar">Figure&nbsp;1</a>.</p>
-<div class="cell" data-execution_count="1">
-<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>r <span class="op">=</span> np.arange(<span class="dv">0</span>, <span class="dv">2</span>, <span class="fl">0.01</span>)</span>
-<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>theta <span class="op">=</span> <span class="dv">2</span> <span class="op">*</span> np.pi <span class="op">*</span> r</span>
-<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>fig, ax <span class="op">=</span> plt.subplots(</span>
-<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>  subplot_kw <span class="op">=</span> {<span class="st">'projection'</span>: <span class="st">'polar'</span>} </span>
-<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>ax.plot(theta, r)</span>
-<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>ax.set_rticks([<span class="fl">0.5</span>, <span class="dv">1</span>, <span class="fl">1.5</span>, <span class="dv">2</span>])</span>
-<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>ax.grid(<span class="va">True</span>)</span>
-<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-display">
-<div id="fig-polar" class="quarto-figure quarto-figure-center anchored">
-<figure class="figure">
-<p><img src="index_files/figure-html/fig-polar-output-1.png" width="450" height="439" class="figure-img"></p>
-<figcaption class="figure-caption">Figure&nbsp;1: A line plot on a polar axis</figcaption>
-</figure>
+<section id="introduction" class="level1">
+<h1>Introduction</h1>
+<p>In this article I will be guiding throught the implementation of <a href="https://arxiv.org/abs/1409.1556">VGG paper</a>. VGG paper is published in 2015. Title of the paper is Very Deep Convolutional Networks for Large-Scale Image Recognition”. I agree, quite a mouthful but the proposed models managed to place second in Classification and first in Localization in ImageNet 2014 Challange. Mainly, they investigate the following:</p>
+<ol type="1">
+<li>Use of deeper networks (Convolutional that is)</li>
+<li>Small filter sizes (3x3 and 1x1)</li>
+<li>Systematically decreasing feature size and increasing filter count</li>
+</ol>
+<p>Architectures presented in the paper consist of Conv, MaxPool, Fully-Connected layers and ReLU activation (apart softmax for multi-class classification). Nowadays, BatchNorm is in wide use but it wasn’t on the map at the time of this paper (although on one of the architectures utilized LocalResponseNormalization but it is reported to have no benefit). Similarly Dropout layers are not used as well. Layer configurations can be summarized as:</p>
+<ol type="1">
+<li>ReLU Activation after every parametrized layer</li>
+<li>MaxPool layers (2x2) window with stride 2</li>
+<li>Common fully-connected layers accross the proposed architectures</li>
+<li>Convolutional layers with (3x3) and (1x1) filters with “same” padding. Filter count ranges from 64 to 512 and incremented by doubling</li>
+</ol>
+</section>
+<section id="architecture-summary" class="level1">
+<h1>Architecture Summary</h1>
+<p>Summary of the architectures as given in the paper:</p>
+<table class="table">
+<thead>
+<tr class="header">
+<th>A</th>
+<th>A-LRN</th>
+<th>B</th>
+<th>C</th>
+<th>D</th>
+<th>E</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>11 layers</td>
+<td>11 layers</td>
+<td>13 layers</td>
+<td>16 layers</td>
+<td>16 layers</td>
+<td>19 layers</td>
+</tr>
+<tr class="even">
+<td>conv3-64</td>
+<td>conv3-64</td>
+<td>conv3-64</td>
+<td>conv3-64</td>
+<td>conv3-64</td>
+<td>conv3-64</td>
+</tr>
+<tr class="odd">
+<td>LRN</td>
+<td>conv3-64</td>
+<td>conv3-64</td>
+<td>conv3-64</td>
+<td>conv3-64</td>
+<td>-</td>
+</tr>
+<tr class="even">
+<td>maxpool</td>
+<td>maxpool</td>
+<td>maxpool</td>
+<td>maxpool</td>
+<td>maxpool</td>
+<td>maxpool</td>
+</tr>
+<tr class="odd">
+<td>conv3-128</td>
+<td>conv3-128</td>
+<td>conv3-128</td>
+<td>conv3-128</td>
+<td>conv3-128</td>
+<td>conv3-128</td>
+</tr>
+<tr class="even">
+<td>conv3-128</td>
+<td>conv3-128</td>
+<td>conv3-128</td>
+<td>conv3-128</td>
+<td>-</td>
+<td>-</td>
+</tr>
+<tr class="odd">
+<td>maxpool</td>
+<td>maxpool</td>
+<td>maxpool</td>
+<td>maxpool</td>
+<td>maxpool</td>
+<td>maxpool</td>
+</tr>
+<tr class="even">
+<td>conv3-256</td>
+<td>conv3-256</td>
+<td>conv3-256</td>
+<td>conv3-256</td>
+<td>conv3-256 conv3-256</td>
+<td></td>
+</tr>
+<tr class="odd">
+<td>conv3-256</td>
+<td>conv3-256</td>
+<td>conv3-256</td>
+<td>conv3-256</td>
+<td>conv3-256</td>
+<td>conv3-256</td>
+</tr>
+<tr class="even">
+<td>conv1-256</td>
+<td>conv3-256</td>
+<td>conv3-256</td>
+<td>-</td>
+<td>-</td>
+<td>-</td>
+</tr>
+<tr class="odd">
+<td>conv3-256</td>
+<td>-</td>
+<td>-</td>
+<td>-</td>
+<td>-</td>
+<td>-</td>
+</tr>
+<tr class="even">
+<td>maxpool</td>
+<td>maxpool</td>
+<td>maxpool</td>
+<td>maxpool</td>
+<td>maxpool</td>
+<td>maxpool</td>
+</tr>
+<tr class="odd">
+<td>conv3-512</td>
+<td>conv3-512</td>
+<td>conv3-512</td>
+<td>conv3-512</td>
+<td>conv3-512</td>
+<td>conv3-512</td>
+</tr>
+<tr class="even">
+<td>conv3-512</td>
+<td>conv3-512</td>
+<td>conv3-512</td>
+<td>conv3-512</td>
+<td>conv3-512</td>
+<td>conv3-512</td>
+</tr>
+<tr class="odd">
+<td>conv1-512</td>
+<td>conv3-512</td>
+<td>conv3-512</td>
+<td>-</td>
+<td>-</td>
+<td>-</td>
+</tr>
+<tr class="even">
+<td>conv3-512</td>
+<td>-</td>
+<td>-</td>
+<td>-</td>
+<td>-</td>
+<td>-</td>
+</tr>
+<tr class="odd">
+<td>maxpool</td>
+<td>maxpool</td>
+<td>maxpool</td>
+<td>maxpool</td>
+<td>maxpool</td>
+<td>maxpool</td>
+</tr>
+<tr class="even">
+<td>conv3-512</td>
+<td>conv3-512</td>
+<td>conv3-512</td>
+<td>conv3-512</td>
+<td>conv3-512</td>
+<td>conv3-512</td>
+</tr>
+<tr class="odd">
+<td>conv3-512</td>
+<td>conv3-512</td>
+<td>conv3-512</td>
+<td>conv3-512</td>
+<td>conv3-512</td>
+<td>conv3-512</td>
+</tr>
+<tr class="even">
+<td>conv1-512</td>
+<td>conv3-512</td>
+<td>conv3-512</td>
+<td>-</td>
+<td>-</td>
+<td>-</td>
+</tr>
+<tr class="odd">
+<td>conv3-512</td>
+<td>-</td>
+<td>-</td>
+<td>-</td>
+<td>-</td>
+<td>-</td>
+</tr>
+<tr class="even">
+<td>maxpool</td>
+<td>maxpool</td>
+<td>maxpool</td>
+<td>maxpool</td>
+<td>maxpool</td>
+<td>maxpool</td>
+</tr>
+<tr class="odd">
+<td>FC-4096</td>
+<td>FC-4096</td>
+<td>FC-4096</td>
+<td>FC-4096</td>
+<td>FC-4096</td>
+<td>FC-4096</td>
+</tr>
+<tr class="even">
+<td>FC-4096</td>
+<td>FC-4096</td>
+<td>FC-4096</td>
+<td>FC-4096</td>
+<td>FC-4096</td>
+<td>FC-4096</td>
+</tr>
+<tr class="odd">
+<td>FC-1000</td>
+<td>FC-1000</td>
+<td>FC-1000</td>
+<td>FC-1000</td>
+<td>FC-1000</td>
+<td>FC-1000</td>
+</tr>
+<tr class="even">
+<td>soft-max</td>
+<td>soft-max</td>
+<td>soft-max</td>
+<td>soft-max</td>
+<td>soft-max</td>
+<td>soft-max</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="implementation" class="level1">
+<h1>Implementation</h1>
+<div class="cell" data-execution_count="4">
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> torch</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> torch <span class="im">import</span> nn</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> torch.utils.data <span class="im">import</span> DataLoader</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> torchvision <span class="im">import</span> datasets</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> torchvision <span class="im">import</span> transforms</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>train_dataset <span class="op">=</span> datasets.Country211(<span class="st">"data/"</span>,</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>                                split<span class="op">=</span><span class="st">"train"</span>,</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>                                download<span class="op">=</span><span class="va">True</span>,</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>                                transform<span class="op">=</span>transforms.ToTensor)</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>valid_dataset <span class="op">=</span> datasets.Country211(<span class="st">"data/"</span>,</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>                                split<span class="op">=</span><span class="st">"valid"</span>,</span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>                                download<span class="op">=</span><span class="va">True</span>,</span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>                                transform<span class="op">=</span>transforms.ToTensor)</span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>test_dataset <span class="op">=</span> datasets.Country211(<span class="st">"data/"</span>,</span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>                                split<span class="op">=</span><span class="st">"test"</span>,</span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>                                download<span class="op">=</span><span class="va">True</span>,</span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>                                transform<span class="op">=</span>transforms.ToTensor)</span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a>train_dataloader <span class="op">=</span> DataLoader(train_dataset,</span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a>                        batch_size<span class="op">=</span><span class="dv">32</span>,</span>
+<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a>                        shuffle<span class="op">=</span><span class="va">True</span>,</span>
+<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a>                        num_workers<span class="op">=</span><span class="dv">2</span>)</span>
+<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a>valid_dataloader <span class="op">=</span> DataLoader(valid_dataset,</span>
+<span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a>                        batch_size<span class="op">=</span><span class="dv">32</span>,</span>
+<span id="cb2-20"><a href="#cb2-20" aria-hidden="true" tabindex="-1"></a>                        shuffle<span class="op">=</span><span class="va">True</span>,</span>
+<span id="cb2-21"><a href="#cb2-21" aria-hidden="true" tabindex="-1"></a>                        num_workers<span class="op">=</span><span class="dv">2</span>)</span>
+<span id="cb2-22"><a href="#cb2-22" aria-hidden="true" tabindex="-1"></a>test_dataloader <span class="op">=</span> DataLoader(test_dataset,</span>
+<span id="cb2-23"><a href="#cb2-23" aria-hidden="true" tabindex="-1"></a>                        batch_size<span class="op">=</span><span class="dv">32</span>,</span>
+<span id="cb2-24"><a href="#cb2-24" aria-hidden="true" tabindex="-1"></a>                        shuffle<span class="op">=</span><span class="va">True</span>,</span>
+<span id="cb2-25"><a href="#cb2-25" aria-hidden="true" tabindex="-1"></a>                        num_workers<span class="op">=</span><span class="dv">2</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 
 
+</section>
 
 </main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">
