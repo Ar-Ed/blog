@@ -183,6 +183,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 
 
+<p><a target="_blank" href="https://colab.research.google.com/github/Ar-Ed/blog/blob/main/posts/vgg/index.ipynb"> <img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"> </a></p>
 <section id="introduction" class="level1">
 <h1>Introduction</h1>
 <p>In this article I will be guiding you through the implementation of <a href="https://arxiv.org/abs/1409.1556">VGG paper</a>. VGG paper is published in 2015. Title of the paper is “Very Deep Convolutional Networks for Large-Scale Image Recognition”. I agree, quite a mouthful but the proposed models managed to place second place in Classification and first place in Localization for ImageNet 2014 Challange. Mainly, authors investigate the following:</p>
@@ -191,18 +192,23 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <li>Small filter sizes (3x3 and 1x1)</li>
 <li>Systematically decreasing feature size and increasing filter count</li>
 </ol>
-<p>Architectures presented in the paper consist of Conv, MaxPool, Fully-Connected layers and ReLU activation (apart softmax for multi-class classification). Nowadays, BatchNorm is in wide use but it wasn’t on the map at the time of this paper (although on one of the architectures utilized LocalResponseNormalization but it is reported to have no benefit). Similarly Dropout layers are not used as well. Layer configurations can be summarized as:</p>
+<p>Architectures presented in the paper consist of Conv, MaxPool, Fully-Connected layers and ReLU activation (apart from softmax for multi-class classification). Nowadays, BatchNorm is in wide use but it wasn’t on the map at the time of this paper (although one of the architectures utilized LocalResponseNormalization but it is reported to have no benefit). Similarly Dropout layers are not used as well. Layer configurations can be summarized as:</p>
 <ol type="1">
 <li>ReLU Activation after every parametrized layer</li>
 <li>MaxPool layers (2x2) window with stride 2</li>
 <li>Common fully-connected layers accross the proposed architectures</li>
 <li>Convolutional layers with (3x3) and (1x1) filters with “same” padding. Filter count ranges from 64 to 512 and incremented by doubling</li>
 </ol>
-</section>
-<section id="architecture-summary" class="level1">
-<h1>Architecture Summary</h1>
-<p>Summary of the architectures as given in the paper:</p>
 <table class="table">
+<caption>Architecture Summary</caption>
+<colgroup>
+<col style="width: 16%">
+<col style="width: 16%">
+<col style="width: 16%">
+<col style="width: 16%">
+<col style="width: 16%">
+<col style="width: 16%">
+</colgroup>
 <thead>
 <tr class="header">
 <th>A</th>
@@ -231,12 +237,12 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <td>conv3-64</td>
 </tr>
 <tr class="odd">
+<td></td>
 <td>LRN</td>
 <td>conv3-64</td>
 <td>conv3-64</td>
 <td>conv3-64</td>
 <td>conv3-64</td>
-<td>-</td>
 </tr>
 <tr class="even">
 <td>maxpool</td>
@@ -255,28 +261,28 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <td>conv3-128</td>
 </tr>
 <tr class="even">
-<td>conv3-128</td>
-<td>conv3-128</td>
-<td>conv3-128</td>
-<td>conv3-128</td>
-<td>-</td>
-<td>-</td>
-</tr>
-<tr class="odd">
-<td>maxpool</td>
-<td>maxpool</td>
-<td>maxpool</td>
-<td>maxpool</td>
-<td>maxpool</td>
-<td>maxpool</td>
-</tr>
-<tr class="even">
-<td>conv3-256</td>
-<td>conv3-256</td>
-<td>conv3-256</td>
-<td>conv3-256</td>
-<td>conv3-256 conv3-256</td>
 <td></td>
+<td></td>
+<td>conv3-128</td>
+<td>conv3-128</td>
+<td>conv3-128</td>
+<td>conv3-128</td>
+</tr>
+<tr class="odd">
+<td>maxpool</td>
+<td>maxpool</td>
+<td>maxpool</td>
+<td>maxpool</td>
+<td>maxpool</td>
+<td>maxpool</td>
+</tr>
+<tr class="even">
+<td>conv3-256</td>
+<td>conv3-256</td>
+<td>conv3-256</td>
+<td>conv3-256</td>
+<td>conv3-256</td>
+<td>conv3-256</td>
 </tr>
 <tr class="odd">
 <td>conv3-256</td>
@@ -287,20 +293,20 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <td>conv3-256</td>
 </tr>
 <tr class="even">
+<td></td>
+<td></td>
+<td></td>
 <td>conv1-256</td>
 <td>conv3-256</td>
 <td>conv3-256</td>
-<td>-</td>
-<td>-</td>
-<td>-</td>
 </tr>
 <tr class="odd">
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
 <td>conv3-256</td>
-<td>-</td>
-<td>-</td>
-<td>-</td>
-<td>-</td>
-<td>-</td>
 </tr>
 <tr class="even">
 <td>maxpool</td>
@@ -327,20 +333,20 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <td>conv3-512</td>
 </tr>
 <tr class="odd">
+<td></td>
+<td></td>
+<td></td>
 <td>conv1-512</td>
 <td>conv3-512</td>
 <td>conv3-512</td>
-<td>-</td>
-<td>-</td>
-<td>-</td>
 </tr>
 <tr class="even">
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
 <td>conv3-512</td>
-<td>-</td>
-<td>-</td>
-<td>-</td>
-<td>-</td>
-<td>-</td>
 </tr>
 <tr class="odd">
 <td>maxpool</td>
@@ -367,20 +373,20 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <td>conv3-512</td>
 </tr>
 <tr class="even">
+<td></td>
+<td></td>
+<td></td>
 <td>conv1-512</td>
 <td>conv3-512</td>
 <td>conv3-512</td>
-<td>-</td>
-<td>-</td>
-<td>-</td>
 </tr>
 <tr class="odd">
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
 <td>conv3-512</td>
-<td>-</td>
-<td>-</td>
-<td>-</td>
-<td>-</td>
-<td>-</td>
 </tr>
 <tr class="even">
 <td>maxpool</td>
@@ -427,40 +433,242 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="implementation" class="level1">
 <h1>Implementation</h1>
-<div class="cell" data-execution_count="4">
+<p>In this tutorial I will be usign PyTorch. It is a flexible library for deep learning and tensor operations (like numpy) for gpu and cpu. “nn” module is a framework for defining neural networks with predefined layers (so we don’t have to write our Conv Layer for example). I will be using the <strong>Caltech256</strong> dataset from the torchvision datasets module. Dataloader wraps an iterable around the dataset so that it would be easier to train.</p>
+<div class="cell" data-execution_count="1">
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> torch</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> torch <span class="im">import</span> nn</span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> torch.utils.data <span class="im">import</span> DataLoader</span>
 <span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> torchvision <span class="im">import</span> datasets</span>
-<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> torchvision <span class="im">import</span> transforms</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> torchvision <span class="im">import</span> transforms</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> torchvision.utils <span class="im">import</span> make_grid</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> PIL</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> os</span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> glob</span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> collections <span class="im">import</span> OrderedDict</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>By instantiating Caltech256, Caltech256 Dataset will be downloaded unzipped and loaded with <a href="https://pillow.readthedocs.io/en/stable/">PIL</a> library. ToTensor transforms theses PIL Images to Torch Tensors.</p>
+<div class="cell" data-execution_count="2">
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Caltech256 has both RGB and Grayscale images</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> gray_to_rgb(image: PIL.Image):</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> image.convert(<span class="st">"RGB"</span>)</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>dataset <span class="op">=</span> datasets.Caltech256(<span class="st">"data/"</span>,</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>                                download<span class="op">=</span><span class="va">True</span>,</span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>                                transform<span class="op">=</span>transforms.Compose([</span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>                                    gray_to_rgb,</span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>                                    transforms.ToTensor(),</span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>                                    transforms.Resize((<span class="dv">224</span>, <span class="dv">224</span>), antialias<span class="op">=</span><span class="va">False</span>),</span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>                                ]))</span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>dataloader <span class="op">=</span> DataLoader(dataset,</span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a>                        batch_size<span class="op">=</span><span class="dv">16</span>,</span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a>                        shuffle<span class="op">=</span><span class="va">True</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Files already downloaded and verified</code></pre>
+</div>
+</div>
+<div class="cell" data-execution_count="3">
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>label_to_category <span class="op">=</span> <span class="bu">list</span>(<span class="bu">enumerate</span>([os.path.basename(os.path.normpath(<span class="bu">dir</span>).split(<span class="st">"."</span>)[<span class="dv">1</span>]) </span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a> <span class="cf">for</span> <span class="bu">dir</span> <span class="kw">in</span> glob.glob(<span class="st">"data/caltech256/256_ObjectCategories/*/"</span>)]))</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> map_label_to_category(label):</span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> label_to_category[label][<span class="dv">1</span>]</span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>map_label_to_category(<span class="dv">1</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="3">
+<pre><code>'american-flag'</code></pre>
+</div>
+</div>
+<div class="cell" data-execution_count="5">
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>batch <span class="op">=</span> <span class="bu">next</span>(<span class="bu">iter</span>(dataloader))</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>plt.figure(figsize<span class="op">=</span>(<span class="dv">15</span>, <span class="dv">10</span>))</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> index, (images, labels) <span class="kw">in</span> <span class="bu">enumerate</span>(<span class="bu">zip</span>(batch[<span class="dv">0</span>], batch[<span class="dv">1</span>])):</span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>    plt.subplot(<span class="dv">4</span>, <span class="dv">4</span>, index <span class="op">+</span> <span class="dv">1</span>)</span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>    plt.imshow(images.permute(<span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">0</span>), )</span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>    plt.title(map_label_to_category(labels.item()))</span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>    plt.axis(<span class="st">"off"</span>)</span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>plt.tight_layout()</span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<p><img src="index_files/figure-html/cell-5-output-1.png" class="img-fluid"></p>
+</div>
+</div>
+<p>Now that we have out dataset ready, let’s start implementing the paper</p>
+<div class="cell" data-execution_count="6">
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Inherit from nn.Module for compatibility with the nn API</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> VGG(nn.Module):</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>    <span class="co"># define architecture parameters </span></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>    <span class="co"># tuple -&gt; Conv2d(in_channels, out_channels, kernel_size)</span></span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>    conv_architectures <span class="op">=</span> <span class="bu">dict</span>(</span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>        A<span class="op">=</span>[(<span class="dv">3</span>, <span class="dv">64</span>, <span class="dv">3</span>), <span class="st">"max"</span>, (<span class="dv">64</span>, <span class="dv">128</span>, <span class="dv">3</span>), <span class="st">"max"</span>, (<span class="dv">128</span>, <span class="dv">256</span>, <span class="dv">3</span>), (<span class="dv">256</span>, <span class="dv">256</span>, <span class="dv">3</span>), <span class="st">"max"</span>, (<span class="dv">256</span>, <span class="dv">512</span>, <span class="dv">3</span>), (<span class="dv">512</span>, <span class="dv">512</span>, <span class="dv">3</span>), <span class="st">"max"</span>, (<span class="dv">512</span>, <span class="dv">512</span>, <span class="dv">3</span>), (<span class="dv">512</span>, <span class="dv">512</span>, <span class="dv">3</span>), <span class="st">"max"</span>],</span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>        A_LRN<span class="op">=</span>[(<span class="dv">3</span>, <span class="dv">64</span>, <span class="dv">3</span>), <span class="st">"lrn"</span>, <span class="st">"max"</span>, (<span class="dv">64</span>, <span class="dv">128</span>, <span class="dv">3</span>), <span class="st">"max"</span>, (<span class="dv">128</span>, <span class="dv">256</span>, <span class="dv">3</span>), (<span class="dv">256</span>, <span class="dv">256</span>, <span class="dv">3</span>), <span class="st">"max"</span>, (<span class="dv">256</span>, <span class="dv">512</span>, <span class="dv">3</span>), (<span class="dv">512</span>, <span class="dv">512</span>, <span class="dv">3</span>), <span class="st">"max"</span>, (<span class="dv">512</span>, <span class="dv">512</span>, <span class="dv">3</span>), (<span class="dv">512</span>, <span class="dv">512</span>, <span class="dv">3</span>), <span class="st">"max"</span>],</span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>        B<span class="op">=</span>[(<span class="dv">3</span>, <span class="dv">64</span>, <span class="dv">3</span>), (<span class="dv">64</span>, <span class="dv">64</span>, <span class="dv">3</span>), <span class="st">"max"</span>, (<span class="dv">64</span>, <span class="dv">128</span>, <span class="dv">3</span>), (<span class="dv">128</span>, <span class="dv">128</span>, <span class="dv">3</span>), <span class="st">"max"</span>, (<span class="dv">128</span>, <span class="dv">256</span>, <span class="dv">3</span>), (<span class="dv">256</span>, <span class="dv">256</span>, <span class="dv">3</span>), <span class="st">"max"</span>, (<span class="dv">256</span>, <span class="dv">512</span>, <span class="dv">3</span>), (<span class="dv">512</span>, <span class="dv">512</span>, <span class="dv">3</span>), <span class="st">"max"</span>, (<span class="dv">512</span>, <span class="dv">512</span>, <span class="dv">3</span>), (<span class="dv">512</span>, <span class="dv">512</span>, <span class="dv">3</span>), <span class="st">"max"</span>],</span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a>        C<span class="op">=</span>[(<span class="dv">3</span>, <span class="dv">64</span>, <span class="dv">3</span>), (<span class="dv">64</span>, <span class="dv">64</span>, <span class="dv">3</span>), <span class="st">"max"</span>, (<span class="dv">64</span>, <span class="dv">128</span>, <span class="dv">3</span>), (<span class="dv">128</span>, <span class="dv">128</span>, <span class="dv">3</span>), <span class="st">"max"</span>, (<span class="dv">128</span>, <span class="dv">256</span>, <span class="dv">3</span>), (<span class="dv">256</span>, <span class="dv">256</span>, <span class="dv">3</span>), (<span class="dv">256</span>, <span class="dv">256</span>, <span class="dv">1</span>), <span class="st">"max"</span>, (<span class="dv">256</span>, <span class="dv">512</span>, <span class="dv">3</span>), (<span class="dv">512</span>, <span class="dv">512</span>, <span class="dv">3</span>), (<span class="dv">512</span>, <span class="dv">512</span>, <span class="dv">1</span>), <span class="st">"max"</span>, (<span class="dv">512</span>, <span class="dv">512</span>, <span class="dv">3</span>), (<span class="dv">512</span>, <span class="dv">512</span>, <span class="dv">3</span>), (<span class="dv">512</span>, <span class="dv">512</span>, <span class="dv">1</span>), <span class="st">"max"</span>],</span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a>        D<span class="op">=</span>[(<span class="dv">3</span>, <span class="dv">64</span>, <span class="dv">3</span>), (<span class="dv">64</span>, <span class="dv">64</span>, <span class="dv">3</span>), <span class="st">"max"</span>, (<span class="dv">64</span>, <span class="dv">128</span>, <span class="dv">3</span>), (<span class="dv">128</span>, <span class="dv">128</span>, <span class="dv">3</span>), <span class="st">"max"</span>, (<span class="dv">128</span>, <span class="dv">256</span>, <span class="dv">3</span>), (<span class="dv">256</span>, <span class="dv">256</span>, <span class="dv">3</span>), (<span class="dv">256</span>, <span class="dv">256</span>, <span class="dv">3</span>), <span class="st">"max"</span>, (<span class="dv">256</span>, <span class="dv">512</span>, <span class="dv">3</span>), (<span class="dv">512</span>, <span class="dv">512</span>, <span class="dv">3</span>), (<span class="dv">512</span>, <span class="dv">512</span>, <span class="dv">3</span>), <span class="st">"max"</span>, (<span class="dv">512</span>, <span class="dv">512</span>, <span class="dv">3</span>), (<span class="dv">512</span>, <span class="dv">512</span>, <span class="dv">3</span>), (<span class="dv">512</span>, <span class="dv">512</span>, <span class="dv">3</span>), <span class="st">"max"</span>],</span>
+<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a>        E<span class="op">=</span>[(<span class="dv">3</span>, <span class="dv">64</span>, <span class="dv">3</span>), (<span class="dv">64</span>, <span class="dv">64</span>, <span class="dv">3</span>), <span class="st">"max"</span>, (<span class="dv">64</span>, <span class="dv">128</span>, <span class="dv">3</span>), (<span class="dv">128</span>, <span class="dv">128</span>, <span class="dv">3</span>), <span class="st">"max"</span>, (<span class="dv">128</span>, <span class="dv">256</span>, <span class="dv">3</span>), (<span class="dv">256</span>, <span class="dv">256</span>, <span class="dv">3</span>), (<span class="dv">256</span>, <span class="dv">256</span>, <span class="dv">3</span>), (<span class="dv">256</span>, <span class="dv">256</span>, <span class="dv">3</span>), <span class="st">"max"</span>, (<span class="dv">256</span>, <span class="dv">512</span>, <span class="dv">3</span>), (<span class="dv">512</span>, <span class="dv">512</span>, <span class="dv">3</span>), (<span class="dv">512</span>, <span class="dv">512</span>, <span class="dv">3</span>), (<span class="dv">512</span>, <span class="dv">512</span>, <span class="dv">3</span>), <span class="st">"max"</span>, (<span class="dv">512</span>, <span class="dv">512</span>, <span class="dv">3</span>), (<span class="dv">512</span>, <span class="dv">512</span>, <span class="dv">3</span>), (<span class="dv">512</span>, <span class="dv">512</span>, <span class="dv">3</span>), (<span class="dv">512</span>, <span class="dv">512</span>, <span class="dv">3</span>), <span class="st">"max"</span>],</span>
+<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-15"><a href="#cb7-15" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> <span class="fu">__init__</span>(<span class="va">self</span>, architecture_identifier<span class="op">=</span><span class="st">"A"</span>, batch_norm<span class="op">=</span><span class="va">False</span>):</span>
+<span id="cb7-16"><a href="#cb7-16" aria-hidden="true" tabindex="-1"></a>        <span class="bu">super</span>().<span class="fu">__init__</span>()</span>
+<span id="cb7-17"><a href="#cb7-17" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.fully_connected <span class="op">=</span> nn.Sequential(</span>
+<span id="cb7-18"><a href="#cb7-18" aria-hidden="true" tabindex="-1"></a>            nn.Flatten(),</span>
+<span id="cb7-19"><a href="#cb7-19" aria-hidden="true" tabindex="-1"></a>            nn.LazyLinear(<span class="dv">4096</span>),</span>
+<span id="cb7-20"><a href="#cb7-20" aria-hidden="true" tabindex="-1"></a>            nn.ReLU(),</span>
+<span id="cb7-21"><a href="#cb7-21" aria-hidden="true" tabindex="-1"></a>            nn.Dropout(<span class="fl">0.5</span>),</span>
+<span id="cb7-22"><a href="#cb7-22" aria-hidden="true" tabindex="-1"></a>            nn.Linear(<span class="dv">4096</span>, <span class="dv">4096</span>),</span>
+<span id="cb7-23"><a href="#cb7-23" aria-hidden="true" tabindex="-1"></a>            nn.ReLU(),</span>
+<span id="cb7-24"><a href="#cb7-24" aria-hidden="true" tabindex="-1"></a>            nn.Dropout(<span class="fl">0.5</span>),</span>
+<span id="cb7-25"><a href="#cb7-25" aria-hidden="true" tabindex="-1"></a>            nn.Linear(<span class="dv">4096</span>, <span class="dv">1000</span>)</span>
+<span id="cb7-26"><a href="#cb7-26" aria-hidden="true" tabindex="-1"></a>        )</span>
+<span id="cb7-27"><a href="#cb7-27" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-28"><a href="#cb7-28" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.conv_architecture <span class="op">=</span> <span class="va">self</span>.conv_architectures[architecture_identifier]</span>
+<span id="cb7-29"><a href="#cb7-29" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.conv_layers <span class="op">=</span> nn.Sequential()</span>
+<span id="cb7-30"><a href="#cb7-30" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb7-31"><a href="#cb7-31" aria-hidden="true" tabindex="-1"></a>        <span class="cf">for</span> options <span class="kw">in</span> <span class="va">self</span>.conv_architecture:</span>
+<span id="cb7-32"><a href="#cb7-32" aria-hidden="true" tabindex="-1"></a>            <span class="cf">if</span> <span class="bu">isinstance</span>(options, <span class="bu">tuple</span>):</span>
+<span id="cb7-33"><a href="#cb7-33" aria-hidden="true" tabindex="-1"></a>                <span class="va">self</span>.conv_layers.append(nn.Conv2d(<span class="op">*</span>options, padding<span class="op">=</span><span class="st">"same"</span>, stride<span class="op">=</span><span class="dv">1</span>))</span>
+<span id="cb7-34"><a href="#cb7-34" aria-hidden="true" tabindex="-1"></a>                <span class="va">self</span>.conv_layers.append(nn.ReLU())</span>
+<span id="cb7-35"><a href="#cb7-35" aria-hidden="true" tabindex="-1"></a>            <span class="cf">elif</span> options <span class="op">==</span> <span class="st">"lrn"</span>:</span>
+<span id="cb7-36"><a href="#cb7-36" aria-hidden="true" tabindex="-1"></a>                <span class="va">self</span>.conv_layers.append(nn.LocalResponseNorm(<span class="dv">5</span>, alpha<span class="op">=</span><span class="fl">1e-4</span>, beta<span class="op">=</span><span class="fl">0.75</span>, k<span class="op">=</span><span class="dv">2</span>))</span>
+<span id="cb7-37"><a href="#cb7-37" aria-hidden="true" tabindex="-1"></a>            <span class="cf">elif</span> options <span class="op">==</span> <span class="st">"max"</span>:</span>
+<span id="cb7-38"><a href="#cb7-38" aria-hidden="true" tabindex="-1"></a>                <span class="va">self</span>.conv_layers.append(nn.MaxPool2d(kernel_size<span class="op">=</span><span class="dv">2</span>, stride<span class="op">=</span><span class="dv">2</span>, padding<span class="op">=</span><span class="dv">0</span>))</span>
+<span id="cb7-39"><a href="#cb7-39" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb7-40"><a href="#cb7-40" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.model <span class="op">=</span> nn.Sequential(OrderedDict([</span>
+<span id="cb7-41"><a href="#cb7-41" aria-hidden="true" tabindex="-1"></a>            (<span class="st">"feature_extractor"</span>, <span class="va">self</span>.conv_layers),</span>
+<span id="cb7-42"><a href="#cb7-42" aria-hidden="true" tabindex="-1"></a>            (<span class="st">"classifier"</span>, <span class="va">self</span>.fully_connected)</span>
+<span id="cb7-43"><a href="#cb7-43" aria-hidden="true" tabindex="-1"></a>        ]))</span>
+<span id="cb7-44"><a href="#cb7-44" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-45"><a href="#cb7-45" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> forward(<span class="va">self</span>, <span class="bu">input</span>):</span>
+<span id="cb7-46"><a href="#cb7-46" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> <span class="va">self</span>.model(<span class="bu">input</span>)</span>
+<span id="cb7-47"><a href="#cb7-47" aria-hidden="true" tabindex="-1"></a>    </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Let’s take a look at model A with LocalResponseNormalization:</p>
+<div class="cell" data-execution_count="7">
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>VGG(<span class="st">"A_LRN"</span>).model</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>c:\Users\edesa\Desktop\ML Research\env\lib\site-packages\torch\nn\modules\lazy.py:180: UserWarning: Lazy modules are a new feature under heavy development so changes to the API or functionality can happen at any moment.
+  warnings.warn('Lazy modules are a new feature under heavy development '</code></pre>
+</div>
+<div class="cell-output cell-output-display" data-execution_count="7">
+<pre><code>Sequential(
+  (feature_extractor): Sequential(
+    (0): Conv2d(3, 64, kernel_size=(3, 3), stride=(1, 1), padding=same)
+    (1): ReLU()
+    (2): LocalResponseNorm(5, alpha=0.0001, beta=0.75, k=2)
+    (3): MaxPool2d(kernel_size=2, stride=2, padding=0, dilation=1, ceil_mode=False)
+    (4): Conv2d(64, 128, kernel_size=(3, 3), stride=(1, 1), padding=same)
+    (5): ReLU()
+    (6): MaxPool2d(kernel_size=2, stride=2, padding=0, dilation=1, ceil_mode=False)
+    (7): Conv2d(128, 256, kernel_size=(3, 3), stride=(1, 1), padding=same)
+    (8): ReLU()
+    (9): Conv2d(256, 256, kernel_size=(3, 3), stride=(1, 1), padding=same)
+    (10): ReLU()
+    (11): MaxPool2d(kernel_size=2, stride=2, padding=0, dilation=1, ceil_mode=False)
+    (12): Conv2d(256, 512, kernel_size=(3, 3), stride=(1, 1), padding=same)
+    (13): ReLU()
+    (14): Conv2d(512, 512, kernel_size=(3, 3), stride=(1, 1), padding=same)
+    (15): ReLU()
+    (16): MaxPool2d(kernel_size=2, stride=2, padding=0, dilation=1, ceil_mode=False)
+    (17): Conv2d(512, 512, kernel_size=(3, 3), stride=(1, 1), padding=same)
+    (18): ReLU()
+    (19): Conv2d(512, 512, kernel_size=(3, 3), stride=(1, 1), padding=same)
+    (20): ReLU()
+    (21): MaxPool2d(kernel_size=2, stride=2, padding=0, dilation=1, ceil_mode=False)
+  )
+  (classifier): Sequential(
+    (0): LazyLinear(in_features=0, out_features=4096, bias=True)
+    (1): ReLU()
+    (2): Linear(in_features=4096, out_features=4069, bias=True)
+    (3): ReLU()
+    (4): Linear(in_features=4096, out_features=1000, bias=True)
+  )
+)</code></pre>
+</div>
+</div>
+</section>
+<section id="training" class="level1">
+<h1>Training</h1>
+<div class="cell" data-execution_count="22">
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>batch_size <span class="op">=</span> <span class="dv">256</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>momentum <span class="op">=</span> <span class="fl">0.9</span></span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>weight_decay <span class="op">=</span> <span class="fl">5e-4</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell" data-execution_count="21">
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>dataset <span class="op">=</span> datasets.Caltech256(<span class="st">"data/"</span>,</span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>                                download<span class="op">=</span><span class="va">True</span>,</span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>                                transform<span class="op">=</span>transforms.Compose([</span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>                                    gray_to_rgb,</span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>                                    transforms.ToTensor(),</span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a>                                    transforms.Resize((<span class="dv">512</span>, <span class="dv">512</span>), antialias<span class="op">=</span><span class="va">False</span>),</span>
+<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a>                                    transforms.RandomCrop(size<span class="op">=</span>(<span class="dv">224</span>, <span class="dv">224</span>)),</span>
+<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a>                                    transforms.RandomHorizontalFlip(),</span>
+<span id="cb12-9"><a href="#cb12-9" aria-hidden="true" tabindex="-1"></a>                                    transforms.ColorJitter(brightness<span class="op">=</span><span class="fl">0.1</span>, contrast<span class="op">=</span><span class="fl">0.1</span>, saturation<span class="op">=</span><span class="fl">0.1</span>, hue<span class="op">=</span><span class="fl">0.1</span>),</span>
+<span id="cb12-10"><a href="#cb12-10" aria-hidden="true" tabindex="-1"></a>                                    transforms.Normalize(</span>
+<span id="cb12-11"><a href="#cb12-11" aria-hidden="true" tabindex="-1"></a>                                        mean<span class="op">=</span>[<span class="fl">0.485</span>, <span class="fl">0.456</span>, <span class="fl">0.406</span>],</span>
+<span id="cb12-12"><a href="#cb12-12" aria-hidden="true" tabindex="-1"></a>                                        std<span class="op">=</span>[<span class="fl">0.229</span>, <span class="fl">0.224</span>, <span class="fl">0.225</span>]</span>
+<span id="cb12-13"><a href="#cb12-13" aria-hidden="true" tabindex="-1"></a>                                    ),</span>
+<span id="cb12-14"><a href="#cb12-14" aria-hidden="true" tabindex="-1"></a>                                ]))</span>
+<span id="cb12-15"><a href="#cb12-15" aria-hidden="true" tabindex="-1"></a>dataloader <span class="op">=</span> DataLoader(dataset,</span>
+<span id="cb12-16"><a href="#cb12-16" aria-hidden="true" tabindex="-1"></a>                        batch_size<span class="op">=</span>batch_size,</span>
+<span id="cb12-17"><a href="#cb12-17" aria-hidden="true" tabindex="-1"></a>                        shuffle<span class="op">=</span><span class="va">True</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Files already downloaded and verified</code></pre>
+</div>
+</div>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="transformed.png" class="img-fluid figure-img"></p>
+<figcaption class="figure-caption">After Image Augmentation</figcaption>
+</figure>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>train_dataset <span class="op">=</span> datasets.Country211(<span class="st">"data/"</span>,</span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>                                split<span class="op">=</span><span class="st">"train"</span>,</span>
-<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>                                download<span class="op">=</span><span class="va">True</span>,</span>
-<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>                                transform<span class="op">=</span>transforms.ToTensor)</span>
-<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>valid_dataset <span class="op">=</span> datasets.Country211(<span class="st">"data/"</span>,</span>
-<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>                                split<span class="op">=</span><span class="st">"valid"</span>,</span>
-<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>                                download<span class="op">=</span><span class="va">True</span>,</span>
-<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>                                transform<span class="op">=</span>transforms.ToTensor)</span>
-<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>test_dataset <span class="op">=</span> datasets.Country211(<span class="st">"data/"</span>,</span>
-<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>                                split<span class="op">=</span><span class="st">"test"</span>,</span>
-<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>                                download<span class="op">=</span><span class="va">True</span>,</span>
-<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>                                transform<span class="op">=</span>transforms.ToTensor)</span>
-<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a>train_dataloader <span class="op">=</span> DataLoader(train_dataset,</span>
-<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a>                        batch_size<span class="op">=</span><span class="dv">32</span>,</span>
-<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a>                        shuffle<span class="op">=</span><span class="va">True</span>,</span>
-<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a>                        num_workers<span class="op">=</span><span class="dv">2</span>)</span>
-<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a>valid_dataloader <span class="op">=</span> DataLoader(valid_dataset,</span>
-<span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a>                        batch_size<span class="op">=</span><span class="dv">32</span>,</span>
-<span id="cb2-20"><a href="#cb2-20" aria-hidden="true" tabindex="-1"></a>                        shuffle<span class="op">=</span><span class="va">True</span>,</span>
-<span id="cb2-21"><a href="#cb2-21" aria-hidden="true" tabindex="-1"></a>                        num_workers<span class="op">=</span><span class="dv">2</span>)</span>
-<span id="cb2-22"><a href="#cb2-22" aria-hidden="true" tabindex="-1"></a>test_dataloader <span class="op">=</span> DataLoader(test_dataset,</span>
-<span id="cb2-23"><a href="#cb2-23" aria-hidden="true" tabindex="-1"></a>                        batch_size<span class="op">=</span><span class="dv">32</span>,</span>
-<span id="cb2-24"><a href="#cb2-24" aria-hidden="true" tabindex="-1"></a>                        shuffle<span class="op">=</span><span class="va">True</span>,</span>
-<span id="cb2-25"><a href="#cb2-25" aria-hidden="true" tabindex="-1"></a>                        num_workers<span class="op">=</span><span class="dv">2</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>loss_fn <span class="op">=</span> nn.CrossEntropyLoss()</span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>optimizer <span class="op">=</span> torch.optim.SGD(momentum<span class="op">=</span>momentum, weight_decay<span class="op">=</span>weight_decay)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> train_one_epoch(epoch_index, tb_writer):</span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>    running_loss <span class="op">=</span> <span class="fl">0.</span></span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>    last_loss <span class="op">=</span> <span class="fl">0.</span></span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Here, we use enumerate(training_loader) instead of</span></span>
+<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a>    <span class="co"># iter(training_loader) so that we can track the batch</span></span>
+<span id="cb15-7"><a href="#cb15-7" aria-hidden="true" tabindex="-1"></a>    <span class="co"># index and do some intra-epoch reporting</span></span>
+<span id="cb15-8"><a href="#cb15-8" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> i, data <span class="kw">in</span> <span class="bu">enumerate</span>(dataloader):</span>
+<span id="cb15-9"><a href="#cb15-9" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Every data instance is an input + label pair</span></span>
+<span id="cb15-10"><a href="#cb15-10" aria-hidden="true" tabindex="-1"></a>        inputs, labels <span class="op">=</span> data</span>
+<span id="cb15-11"><a href="#cb15-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-12"><a href="#cb15-12" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Zero your gradients for every batch!</span></span>
+<span id="cb15-13"><a href="#cb15-13" aria-hidden="true" tabindex="-1"></a>        optimizer.zero_grad()</span>
+<span id="cb15-14"><a href="#cb15-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-15"><a href="#cb15-15" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Make predictions for this batch</span></span>
+<span id="cb15-16"><a href="#cb15-16" aria-hidden="true" tabindex="-1"></a>        outputs <span class="op">=</span> model(inputs)</span>
+<span id="cb15-17"><a href="#cb15-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-18"><a href="#cb15-18" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Compute the loss and its gradients</span></span>
+<span id="cb15-19"><a href="#cb15-19" aria-hidden="true" tabindex="-1"></a>        loss <span class="op">=</span> loss_fn(outputs, labels)</span>
+<span id="cb15-20"><a href="#cb15-20" aria-hidden="true" tabindex="-1"></a>        loss.backward()</span>
+<span id="cb15-21"><a href="#cb15-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-22"><a href="#cb15-22" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Adjust learning weights</span></span>
+<span id="cb15-23"><a href="#cb15-23" aria-hidden="true" tabindex="-1"></a>        optimizer.step()</span>
+<span id="cb15-24"><a href="#cb15-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-25"><a href="#cb15-25" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Gather data and report</span></span>
+<span id="cb15-26"><a href="#cb15-26" aria-hidden="true" tabindex="-1"></a>        running_loss <span class="op">+=</span> loss.item()</span>
+<span id="cb15-27"><a href="#cb15-27" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> i <span class="op">%</span> <span class="dv">1000</span> <span class="op">==</span> <span class="dv">999</span>:</span>
+<span id="cb15-28"><a href="#cb15-28" aria-hidden="true" tabindex="-1"></a>            last_loss <span class="op">=</span> running_loss <span class="op">/</span> <span class="dv">1000</span> <span class="co"># loss per batch</span></span>
+<span id="cb15-29"><a href="#cb15-29" aria-hidden="true" tabindex="-1"></a>            <span class="bu">print</span>(<span class="st">'  batch </span><span class="sc">{}</span><span class="st"> loss: </span><span class="sc">{}</span><span class="st">'</span>.<span class="bu">format</span>(i <span class="op">+</span> <span class="dv">1</span>, last_loss))</span>
+<span id="cb15-30"><a href="#cb15-30" aria-hidden="true" tabindex="-1"></a>            tb_x <span class="op">=</span> epoch_index <span class="op">*</span> <span class="bu">len</span>(training_loader) <span class="op">+</span> i <span class="op">+</span> <span class="dv">1</span></span>
+<span id="cb15-31"><a href="#cb15-31" aria-hidden="true" tabindex="-1"></a>            tb_writer.add_scalar(<span class="st">'Loss/train'</span>, last_loss, tb_x)</span>
+<span id="cb15-32"><a href="#cb15-32" aria-hidden="true" tabindex="-1"></a>            running_loss <span class="op">=</span> <span class="fl">0.</span></span>
+<span id="cb15-33"><a href="#cb15-33" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-34"><a href="#cb15-34" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> last_loss</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="conclusion" class="level1">
+<h1>Conclusion</h1>
 
 
 </section>
